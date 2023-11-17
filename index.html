@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Agenda</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+</head>
+
+<body>
+    <div class="container mt-4">
+        <div class="row">
+            <div class="col-6">
+                <h3>Agenda de Contatos</h3>
+            </div>
+            <div class="col-6 text-right">
+                <button id="btnAdicionar" class="btn btn-primary">+ adicionar</button>
+            </div>
+        </div>
+        <table class="table table-hover">
+            <thead>
+                <tr>
+                    <th>Nome</th>
+                    <th>Idade</th>
+                    <th>Telefone</th>
+                    <th>Email</th>
+                    <th>Ações</th>
+                </tr>
+            </thead>
+            <tbody>
+            </tbody>
+        </table>
+    </div>
+    <div id="modalAdicionarContato" class="modal">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Adicionar Novo Contato</h5>
+                    <button type="button" class="close" id="closeModal">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <form id="formAdicionarContato">
+                        <div class="form-group">
+                            <label for="nome">Nome:</label>
+                            <input type="text" class="form-control" id="nome" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="idade">Idade:</label>
+                            <input type="number" class="form-control" id="idade" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="telefone">Telefone:</label>
+                            <input type="tel" class="form-control" id="telefone" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="email">Email:</label>
+                            <input type="email" class="form-control" id="email" required>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Salvar Contato</button>
+                    </form>
+
+                </div>
+            </div>
+        </div>
+    </div>
+    <div id="modalEditarContato" class="modal">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Editar Contato</h5>
+                    <button type="button" class="close" id="closeModalEditar">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <form id="formEditarContato">
+                        <div class="form-group">
+                            <label for="nome">Nome:</label>
+                            <input type="text" class="form-control" id="nomeEditar" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="idade">Idade:</label>
+                            <input type="number" class="form-control" id="idadeEditar" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="telefone">Telefone:</label>
+                            <input type="tel" class="form-control" id="telefoneEditar" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="email">Email:</label>
+                            <input type="email" class="form-control" id="emailEditar" required>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Alterar Contato</button>
+                    </form>
+
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <div id="overlay" style="
+        position: fixed;
+        top: 0;
+        left: 0;
+        height: 100%;
+        width: 100%;
+        background-color: rgb(0,0,0,0.5);
+        display: none;
+    ">
+
+    </div>
+
+
+    <script>
+        let contatos = [
+            {nome: "Gunter", idade: "35", telefone: "44444", email: "gunter.amorim@gmail.com"},
+            {nome: "Lourença", idade: "28", telefone: "44444", email: "lourenca@gmail.com"}
+        ]
+
+        let guardadorDeIndice = -1
+
+        const btnAdicionar = document.getElementById('btnAdicionar')
+        const modalAdicionar = document.getElementById('modalAdicionarContato')
+        const modalEditar = document.getElementById('modalEditarContato')
+        const overlay = document.getElementById('overlay')
+
+        const form = document.getElementById('formAdicionarContato')
+        const formEditar = document.getElementById('formEditarContato')
+
+        function toogleModal(modal){
+            console.log(modal.style)
+            if(modal.style.display === '' || modal.style.display === 'none'){
+                modal.style.display = 'block'
+                overlay.style.display = 'block'
+            }else {
+                modal.style.display = 'none'
+                overlay.style.display = 'none'
+            }
+        }
+
+        btnAdicionar.addEventListener('click', function () {
+            toogleModal(modalAdicionar)
+        })
+
+        document.getElementById('closeModal').addEventListener('click', function () {
+            toogleModal(modalAdicionar)
+        });
+        document.getElementById('closeModalEditar').addEventListener('click', function () {
+            toogleModal(modalEditar)
+        });
+
+        function editarContato(indice){
+            toogleModal(modalEditar)
+
+            let contato = contatos[indice]
+
+            document.getElementById('nomeEditar').value = contato.nome;
+            document.getElementById('idadeEditar').value = contato.idade;
+            document.getElementById('telefoneEditar').value = contato.telefone;
+            document.getElementById('emailEditar').value = contato.email;
+
+            guardadorDeIndice = indice
+
+        }
+
+        function excluirContato(indice){
+            contatos.splice(indice, 1)
+            renderizarTabela()
+        }
+
+        function obterContato(){
+            let nome = document.getElementById('nomeEditar').value;
+            let idade = document.getElementById('idadeEditar').value;
+            let telefone = document.getElementById('telefoneEditar').value;
+            let email = document.getElementById('emailEditar').value;
+            
+            return {nome, idade, telefone, email}
+        }
+
+        function renderizarTabela(){
+            const tabela = document.querySelector('table tbody')
+            tabela.innerHTML = ""
+
+            for(let i = 0; i < contatos.length; i++){
+                tabela.innerHTML += `
+                    <tr>
+                        <td>${contatos[i].nome}</td>
+                        <td>${contatos[i].idade}</td>
+                        <td>${contatos[i].telefone}</td>
+                        <td>${contatos[i].email}</td>
+                        <td>
+                            <button class="btn btn-info" onclick="editarContato(${i})">Editar</button>
+                            <button class="btn btn-danger" onclick="excluirContato(${i})">Excluir</button>
+                        </td>
+                    </tr>
+                `
+
+            }
+        }
+
+        formEditar.addEventListener('submit', function(event){            
+            event.preventDefault()
+
+            const contato = obterContato()
+            contatos[guardadorDeIndice] = contato
+            renderizarTabela()
+
+            toogleModal(modalEditar)
+            formEditarContato.reset()
+        })
+
+        formAdicionarContato.addEventListener('submit', function(event){
+            event.preventDefault()
+
+            const contato = obterContato()
+            contatos.push(contato)
+            renderizarTabela()
+
+            toogleModal(modalAdicionar)
+            formAdicionarContato.reset()
+        })
+
+        document.addEventListener('DOMContentLoaded', renderizarTabela)
+    </script>
+</body>
+
+</html>
